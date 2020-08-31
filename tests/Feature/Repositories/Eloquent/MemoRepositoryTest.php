@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Feature\repositories;
+namespace Tests\Feature\Repositories\Eloquent;
 
-use App\Repositories\MemoRepository;
+use App\Repositories\Eloquent\MemoRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
