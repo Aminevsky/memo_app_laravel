@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Repositories;
+namespace App\Repositories;
 
 use App\Memo;
 
 /**
  * Class MemoRepository メモリポジトリ
- * @package App\Http\Repositories
+ * @package App\Repositories
  */
 class MemoRepository
 {

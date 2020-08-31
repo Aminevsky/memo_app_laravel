@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\repositories;
 
-use App\Http\Repositories\MemoRepository;
+use App\Repositories\MemoRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
