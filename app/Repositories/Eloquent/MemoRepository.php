@@ -16,14 +16,18 @@ class MemoRepository implements MemoRepositoryInterface
      *
      * @param string $title タイトル
      * @param string $body 本文
-     * @return bool true:作成成功、false:作成失敗
+     * @return array|false 作成成功時は配列、失敗時はfalse
      */
-    public function create(string $title, string $body): bool
+    public function create(string $title, string $body)
     {
         $model = new Memo();
         $model->title = $title;
         $model->body = $body;
 
-        return $model->save();
+        if (!$model->save()) {
+            return false;
+        }
+
+        return $model->toArray();
     }
 }

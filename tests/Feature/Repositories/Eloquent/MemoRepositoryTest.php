@@ -17,17 +17,25 @@ class MemoRepositoryTest extends TestCase
     /**
      * @test
      */
-    public function 新規作成できること()
+    public function 新規作成に成功した場合は配列を返却すること()
     {
         $title = $this->faker->text(255);
         $body = $this->faker->text(1000);
 
         $repository = new MemoRepository();
-        $repository->create($title, $body);
+        $result = $repository->create($title, $body);
 
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
             'title' => $title,
             'body' => $body,
         ]);
+
+        $this->assertNotFalse($result);
+        $this->assertIsArray($result);
+        $this->assertArrayHasKey('id', $result);
+        $this->assertSame($title, $result['title']);
+        $this->assertSame($body, $result['body']);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('updated_at', $result);
     }
 }
