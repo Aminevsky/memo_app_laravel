@@ -30,9 +30,8 @@ class MemoCreateServiceTest extends TestCase
         $mockRepo->shouldReceive('create')
             ->once()
             ->andReturn($expected);
-        app()->instance(MemoRepositoryInterface::class, $mockRepo);
 
-        $service = app()->make(MemoCreateService::class);
+        $service = new MemoCreateService($mockRepo);
         $result = $service->create($title, $body);
 
         $this->assertIsArray($result);

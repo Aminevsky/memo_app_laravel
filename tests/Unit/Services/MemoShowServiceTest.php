@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Repositories\MemoRepositoryInterface;
+use App\Services\MemoShowService;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Mockery;
@@ -28,9 +29,8 @@ class MemoShowServiceTest extends TestCase
         $mockRepo->shouldReceive('fetchById')
             ->once()
             ->andReturn($expected);
-        app()->instance(MemoRepositoryInterface::class, $mockRepo);
 
-        $service = app()->make(MemoShowService::class);
+        $service = new MemoShowService($mockRepo);
         $result = $service->show($id);
 
         $this->assertIsArray($result);
