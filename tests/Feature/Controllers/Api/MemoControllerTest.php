@@ -185,4 +185,26 @@ class MemoControllerTest extends TestCase
             'body'  => $afterBody,
         ]);
     }
+
+    /***************************************************************
+     * destroy()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモを削除できること()
+    {
+        $id = 1;
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->delete(route('memos.destroy', ['memo' => $id]));
+
+        $response->assertStatus(Response::HTTP_OK);
+        $response->assertExactJson(['result' => true]);
+
+        $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
+            'id' => $id
+        ]);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\MemoCreateService;
+use App\Services\MemoDeleteService;
 use App\Services\MemoShowService;
 use App\Services\MemoUpdateService;
 use Illuminate\Http\Request;
@@ -92,10 +93,15 @@ class MemoController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  int  $id
+     * @param MemoDeleteService $service
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(int $id, MemoDeleteService $service)
     {
-        //
+        $result = $service->delete($id);
+
+        return response()->json([
+            'result' => $result,
+        ]);
     }
 }

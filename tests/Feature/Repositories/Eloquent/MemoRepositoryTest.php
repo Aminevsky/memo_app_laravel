@@ -150,4 +150,26 @@ class MemoRepositoryTest extends TestCase
         $this->assertArrayHasKey('created_at', $result);
         $this->assertArrayHasKey('updated_at', $result);
     }
+
+
+    /***************************************************************
+     * destroy()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモを削除できること()
+    {
+        $id = 1;
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $repository = new MemoRepository();
+        $result = $repository->delete($id);
+
+        $this->assertTrue($result);
+        $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
+            'id' => $id,
+        ]);
+    }
 }

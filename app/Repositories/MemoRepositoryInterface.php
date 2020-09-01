@@ -33,4 +33,12 @@ interface MemoRepositoryInterface
      * @return array|null 更新成功時は配列、失敗時はnull
      */
     function update(int $id, array $contents);
+
+    /**
+     * メモを削除する。
+     *
+     * @param int $id メモID
+     * @return bool 削除成功時はtrue、失敗時はfalse
+     */
+    function delete(int $id): bool;
 }
