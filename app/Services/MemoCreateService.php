@@ -10,10 +10,8 @@ use App\Repositories\MemoRepositoryInterface;
  */
 class MemoCreateService
 {
-    /**
-     * @var MemoRepositoryInterface メモ情報リポジトリ
-     */
-    private $memoRepository;
+    /** @var MemoRepositoryInterface  */
+    private MemoRepositoryInterface $memoRepository;
 
     /**
      * コンストラクタ

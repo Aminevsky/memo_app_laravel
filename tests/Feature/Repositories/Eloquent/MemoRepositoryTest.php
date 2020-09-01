@@ -77,4 +77,77 @@ class MemoRepositoryTest extends TestCase
 
         $this->assertNull($result);
     }
+
+    /***************************************************************
+     * update()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function タイトルを更新できること()
+    {
+        $id = 1;
+        $afterTitle = 'タイトル_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $repository = new MemoRepository();
+        $contents['title'] = $afterTitle;
+        $result = $repository->update($id, $contents);
+
+        $this->assertIsArray($result);
+        $this->assertSame($id, $result['id']);
+        $this->assertSame($afterTitle, $result['title']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('updated_at', $result);
+    }
+
+    /**
+     * @test
+     */
+    public function 本文を更新できること()
+    {
+        $id = 1;
+        $afterBody = '本文_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $repository = new MemoRepository();
+        $contents['body'] = $afterBody;
+        $result = $repository->update($id, $contents);
+
+        $this->assertIsArray($result);
+        $this->assertSame($id, $result['id']);
+        $this->assertSame($afterBody, $result['body']);
+        $this->assertArrayHasKey('title', $result);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('updated_at', $result);
+    }
+
+    /**
+     * @test
+     */
+    public function 複数項目を同時に更新できること()
+    {
+        $id = 1;
+        $afterTitle = 'タイトル_更新後';
+        $afterBody = '本文_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $repository = new MemoRepository();
+        $contents = [
+            'title' => $afterTitle,
+            'body'  => $afterBody,
+        ];
+        $result = $repository->update($id, $contents);
+
+        $this->assertIsArray($result);
+        $this->assertSame($id, $result['id']);
+        $this->assertSame($afterTitle, $result['title']);
+        $this->assertSame($afterBody, $result['body']);
+        $this->assertArrayHasKey('created_at', $result);
+        $this->assertArrayHasKey('updated_at', $result);
+    }
 }

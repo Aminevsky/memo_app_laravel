@@ -100,4 +100,89 @@ class MemoControllerTest extends TestCase
         ]);
         $response->assertJsonFragment(['id' => $id]);
     }
+
+
+    /***************************************************************
+     * update()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモのタイトルを更新できること()
+    {
+        $id = 1;
+        $afterTitle = 'タイトル_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->put(route('memos.update', ['memo' => $id]), [
+            'title' => $afterTitle,
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $response->assertJsonStructure([
+            'id', 'title', 'body', 'created_at', 'updated_at'
+        ]);
+
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id'    => $id,
+            'title' => $afterTitle,
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function メモの本文を更新できること()
+    {
+        $id = 1;
+        $afterBody = '本文_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->put(route('memos.update', ['memo' => $id]), [
+            'body' => $afterBody,
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $response->assertJsonStructure([
+            'id', 'title', 'body', 'created_at', 'updated_at'
+        ]);
+
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id'    => $id,
+            'body'  => $afterBody,
+        ]);
+    }
+
+    /**
+     * @test
+     */
+    public function 複数項目を同時に更新できること()
+    {
+        $id = 1;
+        $afterTitle = 'タイトル_更新後';
+        $afterBody = '本文_更新後';
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->put(route('memos.update', ['memo' => $id]), [
+            'title' => $afterTitle,
+            'body'  => $afterBody,
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $response->assertJsonStructure([
+            'id', 'title', 'body', 'created_at', 'updated_at'
+        ]);
+
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id'    => $id,
+            'title' => $afterTitle,
+            'body'  => $afterBody,
+        ]);
+    }
 }

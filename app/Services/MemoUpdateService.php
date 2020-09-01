@@ -4,9 +4,13 @@ namespace App\Services;
 
 use App\Repositories\MemoRepositoryInterface;
 
-class MemoShowService
+/**
+ * Class MemoUpdateService
+ * @package App\Services
+ */
+class MemoUpdateService
 {
-    /** @var MemoRepositoryInterface  */
+    /** @var MemoRepositoryInterface */
     private MemoRepositoryInterface $memoRepository;
 
     /**
@@ -20,13 +24,14 @@ class MemoShowService
     }
 
     /**
-     * メモ情報を取得する。
+     * メモ情報を更新する。
      *
      * @param int $id メモID
-     * @return array|null 取得成功時は配列、失敗時はnull
+     * @param array $contents 更新後の内容
+     * @return array|null 更新成功時は配列、失敗時はnull
      */
-    public function show(int $id)
+    public function update(int $id, array $contents)
     {
-        return $this->memoRepository->fetchById($id);
+        return $this->memoRepository->update($id, $contents);
     }
 }

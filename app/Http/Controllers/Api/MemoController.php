@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\MemoCreateService;
 use App\Services\MemoShowService;
+use App\Services\MemoUpdateService;
 use Illuminate\Http\Request;
 
 class MemoController extends Controller
@@ -63,11 +64,28 @@ class MemoController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
+     * @param MemoUpdateService $service
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, int $id, MemoUpdateService $service)
     {
-        //
+        // TODO 1つも更新項目がない場合のエラー（ループでチェック？）
+
+        $contents = [];
+
+        if ($request->title !== null) {
+            $contents['title'] = $request->title;
+        }
+
+        if ($request->body !== null) {
+            $contents['body'] = $request->body;
+        }
+
+        $memo = $service->update($id, $contents);
+
+        // TODO 更新に失敗した場合のエラー
+
+        return response()->json($memo);
     }
 
     /**
