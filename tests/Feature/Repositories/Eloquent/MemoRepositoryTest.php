@@ -172,4 +172,43 @@ class MemoRepositoryTest extends TestCase
             'id' => $id,
         ]);
     }
+
+    /***************************************************************
+     * fetchAll()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモを全件取得して配列で返却すること()
+    {
+        $recordAmount = 2;
+
+        factory(\App\Memo::class, $recordAmount)->create();
+
+        $repository = new MemoRepository();
+        $result = $repository->fetchAll();
+
+        $this->assertIsArray($result);
+        $this->assertSame($recordAmount, count($result));
+
+        for ($i = 0; $i < $recordAmount; $i++) {
+            $this->assertArrayHasKey('id', $result[$i]);
+            $this->assertArrayHasKey('title', $result[$i]);
+            $this->assertArrayHasKey('body', $result[$i]);
+            $this->assertArrayHasKey('created_at', $result[$i]);
+            $this->assertArrayHasKey('updated_at', $result[$i]);
+        }
+    }
+
+    /**
+     * @test
+     */
+    public function メモが存在しない場合に空配列を返却すること()
+    {
+        $repository = new MemoRepository();
+        $result = $repository->fetchAll();
+
+        $this->assertIsArray($result);
+        $this->assertSame(0, count($result));
+    }
 }

@@ -207,4 +207,33 @@ class MemoControllerTest extends TestCase
             'id' => $id
         ]);
     }
+
+    /***************************************************************
+     * index()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモを全件取得できること()
+    {
+        $recordAmount = 2;
+
+        factory(\App\Memo::class, $recordAmount)->create();
+
+        $response = $this->get(route('memos.index'));
+
+        $response->assertStatus(Response::HTTP_OK);
+        $response->assertJsonCount($recordAmount);
+    }
+
+    /**
+     * @test
+     */
+    public function メモが存在しない場合は空のJSONが返ること()
+    {
+        $response = $this->get(route('memos.index'));
+
+        $response->assertStatus(Response::HTTP_OK);
+        $response->assertJsonCount(0);
+    }
 }

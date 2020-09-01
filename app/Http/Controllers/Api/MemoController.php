@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\MemoCreateService;
 use App\Services\MemoDeleteService;
+use App\Services\MemoListService;
 use App\Services\MemoShowService;
 use App\Services\MemoUpdateService;
 use Illuminate\Http\Request;
@@ -14,11 +15,14 @@ class MemoController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param MemoListService $service
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(MemoListService $service)
     {
-        //
+        $result = $service->fetchAll();
+
+        return response()->json($result);
     }
 
     /**

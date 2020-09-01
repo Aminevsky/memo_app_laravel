@@ -41,4 +41,11 @@ interface MemoRepositoryInterface
      * @return bool 削除成功時はtrue、失敗時はfalse
      */
     function delete(int $id): bool;
+
+    /**
+     * メモを全件取得する。
+     *
+     * @return array 0件の場合は空配列
+     */
+    function fetchAll(): array;
 }

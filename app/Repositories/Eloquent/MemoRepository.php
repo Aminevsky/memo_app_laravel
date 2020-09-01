@@ -91,4 +91,14 @@ class MemoRepository implements MemoRepositoryInterface
     {
         return Memo::destroy($id) === 1;
     }
+
+    /**
+     * メモを全件取得する。
+     *
+     * @return array 0件の場合は空配列
+     */
+    public function fetchAll(): array
+    {
+        return Memo::all()->toArray();
+    }
 }
