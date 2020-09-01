@@ -16,6 +16,9 @@ class MemoControllerTest extends TestCase
     /** @var string テーブル名（メモ情報） */
     const TABLE_NAME_MEMO = 'memos';
 
+    /***************************************************************
+     * store()
+     ***************************************************************/
     /**
      * @test
      */
@@ -74,5 +77,27 @@ class MemoControllerTest extends TestCase
         $response->assertExactJson([
             'error' => '作成に失敗しました。',
         ]);
+    }
+
+    /***************************************************************
+     * show()
+     ***************************************************************/
+    /**
+     * @test
+     */
+    public function メモを取得できること()
+    {
+        $id = 1;
+
+        factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->get(route('memos.show', ['memo' => (string)$id]));
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $response->assertJsonStructure([
+            'id', 'title', 'body', 'created_at', 'updated_at'
+        ]);
+        $response->assertJsonFragment(['id' => $id]);
     }
 }

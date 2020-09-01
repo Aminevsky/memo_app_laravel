@@ -30,4 +30,21 @@ class MemoRepository implements MemoRepositoryInterface
 
         return $model->toArray();
     }
+
+    /**
+     * メモを取得する。
+     *
+     * @param int $id メモID
+     * @return array|null 取得成功時は配列、失敗時はnull
+     */
+    public function fetchById(int $id)
+    {
+        $model = Memo::find($id);
+
+        if ($model === null) {
+            return null;
+        }
+
+        return $model->toArray();
+    }
 }

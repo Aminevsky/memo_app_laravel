@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\MemoCreateService;
+use App\Services\MemoShowService;
 use Illuminate\Http\Request;
 
 class MemoController extends Controller
@@ -45,11 +46,16 @@ class MemoController extends Controller
      * Display the specified resource.
      *
      * @param  int  $id
+     * @param \App\Services\MemoShowService $service
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(int $id, MemoShowService $service)
     {
-        //
+        $memo = $service->show($id);
+
+        // TODO メモが存在しない場合のエラー
+
+        return response()->json($memo);
     }
 
     /**
