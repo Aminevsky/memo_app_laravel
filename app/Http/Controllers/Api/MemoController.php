@@ -8,17 +8,22 @@ use App\Services\MemoDeleteService;
 use App\Services\MemoListService;
 use App\Services\MemoShowService;
 use App\Services\MemoUpdateService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Class MemoController
+ * @package App\Http\Controllers\Api
+ */
 class MemoController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * メモ一覧API
      *
-     * @param MemoListService $service
-     * @return \Illuminate\Http\Response
+     * @param \App\Services\MemoListService $service
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index(MemoListService $service)
+    public function index(MemoListService $service): JsonResponse
     {
         $result = $service->fetchAll();
 
@@ -26,13 +31,13 @@ class MemoController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * メモ新規作成API
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Services\MemoCreateService $service
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request, MemoCreateService $service)
+    public function store(Request $request, MemoCreateService $service): JsonResponse
     {
         $title = $request->title;
         $body = $request->body;
@@ -49,13 +54,13 @@ class MemoController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * メモ詳細API
      *
      * @param  int  $id
      * @param \App\Services\MemoShowService $service
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show(int $id, MemoShowService $service)
+    public function show(int $id, MemoShowService $service): JsonResponse
     {
         $memo = $service->show($id);
 
@@ -65,14 +70,14 @@ class MemoController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * メモ更新API
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
-     * @param MemoUpdateService $service
-     * @return \Illuminate\Http\Response
+     * @param \App\Services\MemoUpdateService $service
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, int $id, MemoUpdateService $service)
+    public function update(Request $request, int $id, MemoUpdateService $service): JsonResponse
     {
         // TODO 1つも更新項目がない場合のエラー（ループでチェック？）
 
@@ -94,15 +99,17 @@ class MemoController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * メモ削除API
      *
      * @param  int  $id
-     * @param MemoDeleteService $service
-     * @return \Illuminate\Http\Response
+     * @param \App\Services\MemoDeleteService $service
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy(int $id, MemoDeleteService $service)
+    public function destroy(int $id, MemoDeleteService $service): JsonResponse
     {
         $result = $service->delete($id);
+
+        // TODO 削除に失敗した場合のエラー
 
         return response()->json([
             'result' => $result,

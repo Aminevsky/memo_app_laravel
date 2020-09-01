@@ -23,7 +23,7 @@ interface MemoRepositoryInterface
      * @param int $id メモID
      * @return array|null 取得成功時は配列、失敗時はnull
      */
-    function fetchById(int $id);
+    function fetchById(int $id): ?array;
 
     /**
      * メモを更新する。
@@ -32,7 +32,7 @@ interface MemoRepositoryInterface
      * @param array $contents 更新後の内容
      * @return array|null 更新成功時は配列、失敗時はnull
      */
-    function update(int $id, array $contents);
+    function update(int $id, array $contents): ?array;
 
     /**
      * メモを削除する。

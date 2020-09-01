@@ -30,7 +30,7 @@ class MemoUpdateService
      * @param array $contents 更新後の内容
      * @return array|null 更新成功時は配列、失敗時はnull
      */
-    public function update(int $id, array $contents)
+    public function update(int $id, array $contents): ?array
     {
         return $this->memoRepository->update($id, $contents);
     }

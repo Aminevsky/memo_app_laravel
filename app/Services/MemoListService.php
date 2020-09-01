@@ -28,7 +28,7 @@ class MemoListService
      *
      * @return array 0件の場合は空配列
      */
-    public function fetchAll()
+    public function fetchAll(): array
     {
         return $this->memoRepository->fetchAll();
     }

@@ -37,7 +37,7 @@ class MemoRepository implements MemoRepositoryInterface
      * @param int $id メモID
      * @return array|null 取得成功時は配列、失敗時はnull
      */
-    public function fetchById(int $id)
+    public function fetchById(int $id): ?array
     {
         $model = Memo::find($id);
 
@@ -55,7 +55,7 @@ class MemoRepository implements MemoRepositoryInterface
      * @param array $contents 更新後の内容
      * @return array|null 更新成功時は配列、失敗時はnull
      */
-    public function update(int $id, array $contents)
+    public function update(int $id, array $contents): ?array
     {
         $model = Memo::find($id);
 

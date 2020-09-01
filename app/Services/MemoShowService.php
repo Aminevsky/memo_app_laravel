@@ -25,7 +25,7 @@ class MemoShowService
      * @param int $id メモID
      * @return array|null 取得成功時は配列、失敗時はnull
      */
-    public function show(int $id)
+    public function show(int $id): ?array
     {
         return $this->memoRepository->fetchById($id);
     }
