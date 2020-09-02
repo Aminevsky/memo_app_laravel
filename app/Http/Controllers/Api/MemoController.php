@@ -39,6 +39,11 @@ class MemoController extends Controller
      */
     public function store(Request $request, MemoCreateService $service): JsonResponse
     {
+        $request->validate([
+            'title' => 'required|max:255',
+            'body'  => 'required|max:5000',
+        ]);
+
         $title = $request->title;
         $body = $request->body;
 

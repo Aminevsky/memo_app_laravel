@@ -16,6 +16,12 @@ class MemoControllerTest extends TestCase
     /** @var string テーブル名（メモ情報） */
     const TABLE_NAME_MEMO = 'memos';
 
+    /** @var int タイトル最大文字数 */
+    const TITLE_MAX_LENGTH = 255;
+
+    /** @var int 本文最大文字数 */
+    const BODY_MAX_LENGTH = 5000;
+
     /***************************************************************
      * store()
      ***************************************************************/
@@ -27,7 +33,7 @@ class MemoControllerTest extends TestCase
         $title = 'タイトルテスト';
         $body = '本文テスト';
 
-        $response = $this->post(route('memos.store'), [
+        $response = $this->postJson(route('memos.store'), [
             'title' => $title,
             'body'  => $body,
         ]);
@@ -62,7 +68,7 @@ class MemoControllerTest extends TestCase
         $title = 'タイトルテスト';
         $body = '本文テスト';
 
-        $response = $this->post(route('memos.store'), [
+        $response = $this->postJson(route('memos.store'), [
             'title' => $title,
             'body'  => $body,
         ]);
@@ -77,6 +83,108 @@ class MemoControllerTest extends TestCase
         $response->assertExactJson([
             'error' => '作成に失敗しました。',
         ]);
+    }
+
+    /**
+     * @test
+     * @dataProvider dataProviderForStoreValidationFail
+     * @param string $title
+     * @param string $body
+     * @param array $errors
+     */
+    public function バリデーションエラーが発生すること(string $title, string $body, array $errors)
+    {
+        $response = $this->postJson(route('memos.store'), [
+            'title' => $title,
+            'body'  => $body,
+        ]);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertJsonFragment($errors);
+
+        $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
+            'title' => $title,
+            'body'  => $body,
+        ]);
+    }
+
+    /**
+     * データプロバイダ（バリデーションエラー）
+     *
+     * @return array[]
+     */
+    public function dataProviderForStoreValidationFail()
+    {
+        return [
+            'タイトル：空文字' => [
+                '',
+                '本文テスト',
+                [
+                    'title' => ['タイトルを指定してください。']
+                ]
+            ],
+            'タイトル：文字数超過' => [
+                str_repeat('a', self::TITLE_MAX_LENGTH + 1),
+                '本文テスト',
+                [
+                    'title' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。']
+                ]
+            ],
+            '本文：空文字' => [
+                'タイトルテスト',
+                '',
+                [
+                    'body' => ['本文を指定してください。']
+                ]
+            ],
+            '本文：文字数超過' => [
+                'タイトルテスト',
+                str_repeat('a', self::BODY_MAX_LENGTH + 1),
+                [
+                    'body' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
+                ]
+            ],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider dataProviderForStoreValidationSuccess
+     * @param string $title
+     * @param string $body
+     */
+    public function バリデーションエラーが発生しないこと(string $title, string $body)
+    {
+        $response = $this->postJson(route('memos.store'), [
+            'title' => $title,
+            'body'  => $body,
+        ]);
+
+        $response->assertStatus(Response::HTTP_OK);
+
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'title' => $title,
+            'body'  => $body,
+        ]);
+    }
+
+    /**
+     * データプロバイダ（バリデーション正常）
+     *
+     * @return array[]
+     */
+    public function dataProviderForStoreValidationSuccess()
+    {
+        return [
+            'タイトル：最大文字数' => [
+                str_repeat('a', self::TITLE_MAX_LENGTH),
+                '本文テスト'
+            ],
+            '本文：最大文字数' => [
+                'タイトルテスト',
+                str_repeat('a', self::BODY_MAX_LENGTH),
+            ]
+        ];
     }
 
     /***************************************************************
