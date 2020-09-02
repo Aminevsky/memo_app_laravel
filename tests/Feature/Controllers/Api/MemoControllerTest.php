@@ -199,7 +199,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->get(route('memos.show', ['memo' => (string)$id]));
+        $response = $this->getJson(route('memos.show', ['memo' => (string)$id]));
 
         $response->assertStatus(Response::HTTP_OK);
 
@@ -223,7 +223,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->put(route('memos.update', ['memo' => $id]), [
+        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
             'title' => $afterTitle,
         ]);
 
@@ -249,7 +249,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->put(route('memos.update', ['memo' => $id]), [
+        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
             'body' => $afterBody,
         ]);
 
@@ -276,7 +276,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->put(route('memos.update', ['memo' => $id]), [
+        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
             'title' => $afterTitle,
             'body'  => $afterBody,
         ]);
@@ -306,7 +306,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->delete(route('memos.destroy', ['memo' => $id]));
+        $response = $this->deleteJson(route('memos.destroy', ['memo' => $id]));
 
         $response->assertStatus(Response::HTTP_OK);
         $response->assertExactJson(['result' => true]);
@@ -328,7 +328,7 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class, $recordAmount)->create();
 
-        $response = $this->get(route('memos.index'));
+        $response = $this->getJson(route('memos.index'));
 
         $response->assertStatus(Response::HTTP_OK);
         $response->assertJsonCount($recordAmount);
@@ -339,7 +339,7 @@ class MemoControllerTest extends TestCase
      */
     public function メモが存在しない場合は空のJSONが返ること()
     {
-        $response = $this->get(route('memos.index'));
+        $response = $this->getJson(route('memos.index'));
 
         $response->assertStatus(Response::HTTP_OK);
         $response->assertJsonCount(0);
