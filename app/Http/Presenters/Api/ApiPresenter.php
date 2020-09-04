@@ -17,13 +17,17 @@ class ApiPresenter
      * @param string $title タイトル
      * @param array $addition 拡張情報
      * @param int $status HTTPステータスコード
+     * @param array $headers HTTPヘッダ
+     * @param int $options JSONオプション
      * @return \Illuminate\Http\JsonResponse
      * @see https://tools.ietf.org/html/rfc7807 RFC7807 (Problem Details for HTTP APIs)
      */
     public function responseError(
         string $title,
         array $addition = [],
-        int $status = Response::HTTP_INTERNAL_SERVER_ERROR
+        int $status = Response::HTTP_INTERNAL_SERVER_ERROR,
+        array $headers = [],
+        int $options = 0
     ): JsonResponse
     {
         $contents = [];
@@ -34,7 +38,7 @@ class ApiPresenter
         }
 
         return response()
-            ->json($contents, $status)
+            ->json($contents, $status, $headers, $options)
             ->withHeaders([
                 'Content-Type' => 'application/problem+json'
             ]);

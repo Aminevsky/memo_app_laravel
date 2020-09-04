@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
 use App\Http\Presenters\Api\ApiPresenter;
 use Throwable;
@@ -64,8 +65,6 @@ class Handler extends ExceptionHandler
      */
     protected function invalidJson($request, ValidationException $exception)
     {
-        $presenter = new ApiPresenter();
-
         $title = '入力項目に誤りがあります。';
 
         $errors = [];
@@ -79,8 +78,53 @@ class Handler extends ExceptionHandler
         $addition = ['errors' => $errors];
         $status = $exception->status;
 
-        return $presenter->responseError($title, $addition, $status);
+        return (new ApiPresenter())->responseError($title, $addition, $status);
     }
 
+    /**
+     * 例外に対するJSONレスポンスを準備する。
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param Throwable $e
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function prepareJsonResponse($request, Throwable $e)
+    {
+        $exception = $this->convertExceptionToArray($e);
 
+        return (new ApiPresenter())->responseError(
+            $exception['title'],
+            isset($exception['info']) ? $exception['info'] : [],
+            $this->isHttpException($e) ? $e->getStatusCode() : 500,
+            $this->isHttpException($e) ? $e->getHeaders() : [],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+        );
+    }
+
+    /**
+     * 例外を配列へ変換する。
+     *
+     * @param Throwable $e
+     * @return array
+     */
+    protected function convertExceptionToArray(Throwable $e)
+    {
+        if (config('app.debug')) {
+            return [
+                'title' => $e->getMessage(),
+                'info' => [
+                    'exception' => get_class(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => collect($e->getTrace())->map(function ($trace) {
+                        return Arr::except($trace, ['args']);
+                    })->all(),
+                ]
+            ];
+        }
+
+        return [
+            'title' => $this->isHttpException($e) ? $e->getMessage() : 'システムでエラーが発生しました。',
+        ];
+    }
 }
