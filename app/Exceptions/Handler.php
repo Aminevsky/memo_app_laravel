@@ -3,6 +3,8 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use App\Http\Presenters\Api\ApiPresenter;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -52,4 +54,33 @@ class Handler extends ExceptionHandler
     {
         return parent::render($request, $exception);
     }
+
+    /**
+     * バリデーションエラー時のレスポンスを返却する。
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param ValidationException $exception
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function invalidJson($request, ValidationException $exception)
+    {
+        $presenter = new ApiPresenter();
+
+        $title = '入力項目に誤りがあります。';
+
+        $errors = [];
+        foreach ($exception->errors() as $key => $value) {
+            $errors[] = [
+                'name' => $key,
+                'detail' => $value,
+            ];
+        }
+
+        $addition = ['errors' => $errors];
+        $status = $exception->status;
+
+        return $presenter->responseError($title, $addition, $status);
+    }
+
+
 }

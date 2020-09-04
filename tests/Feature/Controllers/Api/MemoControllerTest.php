@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class MemoControllerTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase, WithFaker, ResponseAssertTrait;
 
     /** @var string テーブル名（メモ情報） */
     const TABLE_NAME_MEMO = 'memos';
@@ -38,7 +38,7 @@ class MemoControllerTest extends TestCase
             'body'  => $body,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
             'title' => $title,
@@ -73,15 +73,11 @@ class MemoControllerTest extends TestCase
             'body'  => $body,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertServerErrorResponse($response, 'メモの新規作成に失敗しました。');
 
         $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
             'title' => $title,
             'body'  => $body,
-        ]);
-
-        $response->assertExactJson([
-            'error' => '作成に失敗しました。',
         ]);
     }
 
@@ -99,8 +95,7 @@ class MemoControllerTest extends TestCase
             'body'  => $body,
         ]);
 
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $response->assertJsonFragment($errors);
+        $this->assertValidationErrorResponse($response, $errors);
 
         $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
             'title' => $title,
@@ -120,29 +115,41 @@ class MemoControllerTest extends TestCase
                 '',
                 '本文テスト',
                 [
-                    'title' => ['タイトルを指定してください。']
-                ]
+                    [
+                        'name' => 'title',
+                        'detail' => ['タイトルを指定してください。'],
+                    ],
+                ],
             ],
             'タイトル：文字数超過' => [
                 str_repeat('a', self::TITLE_MAX_LENGTH + 1),
                 '本文テスト',
                 [
-                    'title' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。']
-                ]
+                    [
+                        'name' => 'title',
+                        'detail' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。'],
+                    ],
+                ],
             ],
             '本文：空文字' => [
                 'タイトルテスト',
                 '',
                 [
-                    'body' => ['本文を指定してください。']
-                ]
+                    [
+                        'name' => 'body',
+                        'detail' => ['本文を指定してください。'],
+                    ],
+                ],
             ],
             '本文：文字数超過' => [
                 'タイトルテスト',
                 str_repeat('a', self::BODY_MAX_LENGTH + 1),
                 [
-                    'body' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
-                ]
+                    [
+                        'name' => 'body',
+                        'detail' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
+                    ],
+                ],
             ],
         ];
     }
@@ -160,7 +167,7 @@ class MemoControllerTest extends TestCase
             'body'  => $body,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
             'title' => $title,
@@ -201,7 +208,7 @@ class MemoControllerTest extends TestCase
 
         $response = $this->getJson(route('memos.show', ['memo' => (string)$id]));
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $response->assertJsonStructure([
             'id', 'title', 'body', 'created_at', 'updated_at'
@@ -227,7 +234,7 @@ class MemoControllerTest extends TestCase
             'title' => $afterTitle,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $response->assertJsonStructure([
             'id', 'title', 'body', 'created_at', 'updated_at'
@@ -253,7 +260,7 @@ class MemoControllerTest extends TestCase
             'body' => $afterBody,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $response->assertJsonStructure([
             'id', 'title', 'body', 'created_at', 'updated_at'
@@ -281,7 +288,7 @@ class MemoControllerTest extends TestCase
             'body'  => $afterBody,
         ]);
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
 
         $response->assertJsonStructure([
             'id', 'title', 'body', 'created_at', 'updated_at'
@@ -312,10 +319,8 @@ class MemoControllerTest extends TestCase
 
         $response = $this->putJson(route('memos.update', ['memo' => $id]));
 
-        $response->assertStatus(Response::HTTP_BAD_REQUEST);
-        $response->assertExactJson([
-            'message' => 'タイトルまたは本文のいずれかを指定してください。'
-        ]);
+        $errorMsg = 'タイトルまたは本文のいずれかを指定してください。';
+        $this->assertClientErrorResponse($response, Response::HTTP_BAD_REQUEST, $errorMsg);
 
         // レコードが更新されていないこと
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
@@ -340,8 +345,7 @@ class MemoControllerTest extends TestCase
 
         $response = $this->putJson(route('memos.update', ['memo' => $id]), $params);
 
-        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
-        $response->assertJsonFragment($errors);
+        $this->assertValidationErrorResponse($response, $errors);
 
         // DBが更新されていないこと
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
@@ -366,16 +370,22 @@ class MemoControllerTest extends TestCase
                     'title' => str_repeat('a', self::TITLE_MAX_LENGTH + 1),
                 ],
                 [
-                    'title' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。']
-                ]
+                    [
+                        'name' => 'title',
+                        'detail' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。'],
+                    ],
+                ],
             ],
             '本文：文字数超過' => [
                 [
                     'body' => str_repeat('a', self::BODY_MAX_LENGTH + 1)
                 ],
                 [
-                    'body' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
-                ]
+                    [
+                        'name' => 'body',
+                        'detail' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
+                    ],
+                ],
             ]
         ];
     }
@@ -394,7 +404,7 @@ class MemoControllerTest extends TestCase
 
         $response = $this->deleteJson(route('memos.destroy', ['memo' => $id]));
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
         $response->assertExactJson(['result' => true]);
 
         $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
@@ -416,7 +426,7 @@ class MemoControllerTest extends TestCase
 
         $response = $this->getJson(route('memos.index'));
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
         $response->assertJsonCount($recordAmount);
     }
 
@@ -427,7 +437,7 @@ class MemoControllerTest extends TestCase
     {
         $response = $this->getJson(route('memos.index'));
 
-        $response->assertStatus(Response::HTTP_OK);
+        $this->assertSuccessResponse($response);
         $response->assertJsonCount(0);
     }
 }

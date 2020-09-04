@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Presenters\Api\ApiPresenter;
 use App\Services\MemoCreateService;
 use App\Services\MemoDeleteService;
 use App\Services\MemoListService;
@@ -10,6 +11,7 @@ use App\Services\MemoShowService;
 use App\Services\MemoUpdateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Class MemoController
@@ -17,6 +19,19 @@ use Illuminate\Http\Request;
  */
 class MemoController extends Controller
 {
+    /** @var ApiPresenter  */
+    private ApiPresenter $presenter;
+
+    /**
+     * コンストラクタ
+     *
+     * @param ApiPresenter $presenter
+     */
+    public function __construct(ApiPresenter $presenter)
+    {
+        $this->presenter = $presenter;
+    }
+
     /**
      * メモ一覧API
      *
@@ -50,9 +65,7 @@ class MemoController extends Controller
         $result = $service->create($title, $body);
 
         if (!$result) {
-            return response()->json([
-                'error' => '作成に失敗しました。',
-            ]);
+            return $this->presenter->responseError('メモの新規作成に失敗しました。');
         }
 
         return response()->json($result);
@@ -85,9 +98,8 @@ class MemoController extends Controller
     public function update(Request $request, int $id, MemoUpdateService $service): JsonResponse
     {
         if (!$this->existsUpdateInputItem($request)) {
-            return response()->json([
-                'message' => 'タイトルまたは本文のいずれかを指定してください。'
-            ], 400);
+            $errorTitle = 'タイトルまたは本文のいずれかを指定してください。';
+            return $this->presenter->responseError($errorTitle, [], Response::HTTP_BAD_REQUEST);
         }
 
         $request->validate([
