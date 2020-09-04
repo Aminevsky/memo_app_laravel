@@ -92,7 +92,7 @@ class MemoControllerTest extends TestCase
      * @param string $body
      * @param array $errors
      */
-    public function バリデーションエラーが発生すること(string $title, string $body, array $errors)
+    public function 新規作成時にバリデーションエラーが発生すること(string $title, string $body, array $errors)
     {
         $response = $this->postJson(route('memos.store'), [
             'title' => $title,
@@ -153,7 +153,7 @@ class MemoControllerTest extends TestCase
      * @param string $title
      * @param string $body
      */
-    public function バリデーションエラーが発生しないこと(string $title, string $body)
+    public function 新規作成時にバリデーションエラーが発生しないこと(string $title, string $body)
     {
         $response = $this->postJson(route('memos.store'), [
             'title' => $title,
@@ -219,7 +219,7 @@ class MemoControllerTest extends TestCase
     public function メモのタイトルを更新できること()
     {
         $id = 1;
-        $afterTitle = 'タイトル_更新後';
+        $afterTitle = str_repeat('a', self::TITLE_MAX_LENGTH);
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
@@ -245,7 +245,7 @@ class MemoControllerTest extends TestCase
     public function メモの本文を更新できること()
     {
         $id = 1;
-        $afterBody = '本文_更新後';
+        $afterBody = str_repeat('a', self::BODY_MAX_LENGTH);
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
@@ -292,6 +292,92 @@ class MemoControllerTest extends TestCase
             'title' => $afterTitle,
             'body'  => $afterBody,
         ]);
+    }
+
+    /**
+     * @test
+     */
+    public function 更新項目が1つも指定されていない場合にエラーとなること()
+    {
+        $id = 1;
+
+        $model = factory(\App\Memo::class)->make([
+            'id'    => $id,
+        ]);
+        $title = $model->title;
+        $body = $model->body;
+        $model->save();
+        $createdAt = $model->created_at;
+        $updatedAt = $model->updated_at;
+
+        $response = $this->putJson(route('memos.update', ['memo' => $id]));
+
+        $response->assertStatus(Response::HTTP_BAD_REQUEST);
+        $response->assertExactJson([
+            'message' => 'タイトルまたは本文のいずれかを指定してください。'
+        ]);
+
+        // レコードが更新されていないこと
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id'    => $id,
+            'title' => $title,
+            'body'  => $body,
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt,
+        ]);
+    }
+
+    /**
+     * @test
+     * @dataProvider dataProviderForUpdateValidationFail
+     * @param array $params
+     * @param array $errors
+     */
+    public function 更新時にバリデーションエラーが発生すること(array $params, array $errors)
+    {
+        $id = 1;
+        $beforeModel = factory(\App\Memo::class)->create(['id' => $id]);
+
+        $response = $this->putJson(route('memos.update', ['memo' => $id]), $params);
+
+        $response->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $response->assertJsonFragment($errors);
+
+        // DBが更新されていないこと
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id'    => $id,
+            'title' => $beforeModel->title,
+            'body'  => $beforeModel->body,
+            'created_at' => $beforeModel->created_at,
+            'updated_at' => $beforeModel->updated_at,
+        ]);
+    }
+
+    /**
+     * データプロバイダ（バリデーションエラー）
+     *
+     * @return array[]
+     */
+    public function dataProviderForUpdateValidationFail()
+    {
+        return [
+            'タイトル：文字数超過' => [
+                [
+                    'title' => str_repeat('a', self::TITLE_MAX_LENGTH + 1),
+                ],
+                [
+                    'title' => ['タイトルは' . self::TITLE_MAX_LENGTH . '文字以下で指定してください。']
+                ]
+            ],
+            '本文：文字数超過' => [
+                [
+                    'body' => str_repeat('a', self::BODY_MAX_LENGTH + 1)
+                ],
+                [
+                    'body' => ['本文は' . self::BODY_MAX_LENGTH . '文字以下で指定してください。']
+                ]
+            ]
+        ];
     }
 
     /***************************************************************

@@ -84,7 +84,16 @@ class MemoController extends Controller
      */
     public function update(Request $request, int $id, MemoUpdateService $service): JsonResponse
     {
-        // TODO 1つも更新項目がない場合のエラー（ループでチェック？）
+        if (!$this->existsUpdateInputItem($request)) {
+            return response()->json([
+                'message' => 'タイトルまたは本文のいずれかを指定してください。'
+            ], 400);
+        }
+
+        $request->validate([
+            'title' => 'max:255',
+            'body'  => 'max:5000'
+        ]);
 
         $contents = [];
 
@@ -101,6 +110,25 @@ class MemoController extends Controller
         // TODO 更新に失敗した場合のエラー
 
         return response()->json($memo);
+    }
+
+    /**
+     * 更新項目が入力に存在するかをチェックする。
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool 存在時はtrue、不存在時はfalse
+     */
+    private function existsUpdateInputItem(Request $request): bool
+    {
+        $fields = ['title', 'body'];
+
+        foreach ($fields as $field) {
+            if (isset($request->$field)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
