@@ -82,7 +82,9 @@ class MemoController extends Controller
     {
         $memo = $service->show($id);
 
-        // TODO メモが存在しない場合のエラー
+        if ($memo === null) {
+            return $this->presenter->responseError('メモが存在しません。', [], Response::HTTP_NOT_FOUND);
+        }
 
         return response()->json($memo);
     }
@@ -119,7 +121,9 @@ class MemoController extends Controller
 
         $memo = $service->update($id, $contents);
 
-        // TODO 更新に失敗した場合のエラー
+        if ($memo === null) {
+            return $this->presenter->responseError('メモの更新に失敗しました。');
+        }
 
         return response()->json($memo);
     }
@@ -154,7 +158,9 @@ class MemoController extends Controller
     {
         $result = $service->delete($id);
 
-        // TODO 削除に失敗した場合のエラー
+        if (!$result) {
+            return $this->presenter->responseError('メモの削除に失敗しました。');
+        }
 
         return response()->json([
             'result' => $result,

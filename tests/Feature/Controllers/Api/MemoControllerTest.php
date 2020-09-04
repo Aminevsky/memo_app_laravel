@@ -3,6 +3,8 @@
 namespace Tests\Feature\Controllers\Api;
 
 use App\Services\MemoCreateService;
+use App\Services\MemoDeleteService;
+use App\Services\MemoUpdateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Response;
@@ -216,6 +218,21 @@ class MemoControllerTest extends TestCase
         $response->assertJsonFragment(['id' => $id]);
     }
 
+    /**
+     * @test
+     */
+    public function メモが存在しない場合にエラーが発生すること()
+    {
+        $id = 1;
+
+        // 存在する場合に備えて削除しておく。
+        \App\Memo::destroy($id);
+
+        $response = $this->getJson(route('memos.show', ['memo' => (string)$id]));
+
+        $errorMsg = 'メモが存在しません。';
+        $this->assertClientErrorResponse($response, Response::HTTP_NOT_FOUND, $errorMsg);
+    }
 
     /***************************************************************
      * update()
@@ -390,6 +407,27 @@ class MemoControllerTest extends TestCase
         ];
     }
 
+    /**
+     * @test
+     */
+    public function DB更新に失敗した場合にエラーが発生すること()
+    {
+        $id = 1;
+
+        // サービスクラスをモック化してエラー状態を発生させる。
+        $mockService = Mockery::mock(MemoUpdateService::class);
+        $mockService->shouldReceive('update')
+            ->withAnyArgs()
+            ->andReturn(null);
+        app()->instance(MemoUpdateService::class, $mockService);
+
+        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
+            'title' => 'タイトル_更新後',
+        ]);
+
+        $this->assertServerErrorResponse($response, 'メモの更新に失敗しました。');
+    }
+
     /***************************************************************
      * destroy()
      ***************************************************************/
@@ -410,6 +448,24 @@ class MemoControllerTest extends TestCase
         $this->assertDatabaseMissing(self::TABLE_NAME_MEMO, [
             'id' => $id
         ]);
+    }
+
+    /**
+     * @test
+     */
+    public function DB削除に失敗した場合にエラーが発生すること()
+    {
+        $id = 1;
+
+        $mockService = Mockery::mock(MemoDeleteService::class);
+        $mockService->shouldReceive('delete')
+            ->with($id)
+            ->andReturn(false);
+        app()->instance(MemoDeleteService::class, $mockService);
+
+        $response = $this->deleteJson(route('memos.destroy', ['memo' => $id]));
+
+        $this->assertServerErrorResponse($response, 'メモの削除に失敗しました。');
     }
 
     /***************************************************************
