@@ -2,10 +2,10 @@
 
 namespace App\Exceptions;
 
+use App\Http\Responses\ApiErrorResponse;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
-use App\Http\Presenters\Api\ApiPresenter;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -65,8 +65,6 @@ class Handler extends ExceptionHandler
      */
     protected function invalidJson($request, ValidationException $exception)
     {
-        $title = '入力項目に誤りがあります。';
-
         $errors = [];
         foreach ($exception->errors() as $key => $value) {
             $errors[] = [
@@ -75,10 +73,12 @@ class Handler extends ExceptionHandler
             ];
         }
 
-        $addition = ['errors' => $errors];
-        $status = $exception->status;
+        $response = new ApiErrorResponse();
 
-        return (new ApiPresenter())->responseError($title, $addition, $status);
+        return $response->setTitle('入力項目に誤りがあります。')
+            ->setAdditions(['errors' => $errors])
+            ->setStatus($exception->status)
+            ->send();
     }
 
     /**
@@ -91,14 +91,21 @@ class Handler extends ExceptionHandler
     protected function prepareJsonResponse($request, Throwable $e)
     {
         $exception = $this->convertExceptionToArray($e);
+        $isHttpException = $this->isHttpException($e);
 
-        return (new ApiPresenter())->responseError(
-            $exception['title'],
-            isset($exception['info']) ? $exception['info'] : [],
-            $this->isHttpException($e) ? $e->getStatusCode() : 500,
-            $this->isHttpException($e) ? $e->getHeaders() : [],
-            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-        );
+        $title = $exception['title'];
+        $additions = isset($exception['info']) ? $exception['info'] : [];
+        $status = $isHttpException ? $e->getStatusCode() : 500;
+        $headers = $isHttpException ? $e->getHeaders() : [];
+
+        $response = new ApiErrorResponse();
+
+        return $response->setTitle($title)
+            ->setAdditions($additions)
+            ->setStatus($status)
+            ->setHeaders($headers)
+            ->setOption(JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            ->send();
     }
 
     /**

@@ -336,8 +336,17 @@ class MemoControllerTest extends TestCase
 
         $response = $this->putJson(route('memos.update', ['memo' => $id]));
 
-        $errorMsg = 'タイトルまたは本文のいずれかを指定してください。';
-        $this->assertClientErrorResponse($response, Response::HTTP_BAD_REQUEST, $errorMsg);
+        $errors = [
+            [
+                'name' => 'title',
+                'detail' => ['タイトルまたは本文のいずれかを指定してください。'],
+            ],
+            [
+                'name' => 'body',
+                'detail' => ['タイトルまたは本文のいずれかを指定してください。'],
+            ],
+        ];
+        $this->assertValidationErrorResponse($response, $errors);
 
         // レコードが更新されていないこと
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
