@@ -23,6 +23,12 @@ use Illuminate\Support\Facades\Validator;
  */
 class MemoController extends Controller
 {
+    /** @var int タイトル最大文字数 */
+    const TITLE_MAX_LEN = 255;
+
+    /** @var int 本文最大文字数 */
+    const BODY_MAX_LEN = 5000;
+
     /** @var ApiSuccessResponse 成功時のレスポンス */
     private ApiSuccessResponse $successResponse;
 
@@ -60,8 +66,8 @@ class MemoController extends Controller
     public function store(Request $request, MemoCreateService $service): JsonResponse
     {
         Validator::make($request->all(), [
-            'title' => 'required|max:255',
-            'body'  => 'required|max:5000',
+            'title' => ['required', $this->getRuleTitleMax()],
+            'body'  => ['required', $this->getRuleBodyMax()],
         ])->validate();
 
         $result = $service->create($request->title, $request->body);
@@ -108,8 +114,8 @@ class MemoController extends Controller
         ];
 
         Validator::make($request->all(), [
-            'title' => 'max:255|required_without_all:body',
-            'body'  => 'max:5000|required_without_all:title',
+            'title' => [$this->getRuleTitleMax(), 'required_without_all:body'],
+            'body'  => [$this->getRuleBodyMax(), 'required_without_all:title'],
         ], $errorMsgs)->validate();
 
         $contents = [];
@@ -147,5 +153,25 @@ class MemoController extends Controller
         }
 
         return $this->successResponse->setContent(['result' => $result])->send();
+    }
+
+    /**
+     * タイトルの最大文字数のバリデーションルールを返却する。
+     *
+     * @return string
+     */
+    private function getRuleTitleMax(): string
+    {
+        return 'max:' . constant('self::TITLE_MAX_LEN');
+    }
+
+    /**
+     * 本文の最大文字数のバリデーションルールを返却する。
+     *
+     * @return string
+     */
+    private function getRuleBodyMax(): string
+    {
+        return 'max:' . constant('self::BODY_MAX_LEN');
     }
 }
