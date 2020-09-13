@@ -14,8 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'user',
+], function ($router) {
+    Route::post('login', 'Api\UserController@login')->name('user.login');
+    Route::post('logout', 'Api\UserController@logout')->name('user.logout');
+    Route::post('refresh', 'Api\UserController@refresh')->name('user.refresh');
 });
 
 Route::apiResource('memos', 'Api\MemoController');
