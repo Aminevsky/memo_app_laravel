@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use App\Http\Responses\ApiErrorResponse;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
@@ -133,5 +134,25 @@ class Handler extends ExceptionHandler
         return [
             'title' => $this->isHttpException($e) ? $e->getMessage() : 'システムでエラーが発生しました。',
         ];
+    }
+
+    /**
+     * APIで認証エラーが発生した場合にレスポンスを返却する。
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Auth\AuthenticationException $exception
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    protected function unauthenticated($request, AuthenticationException $exception)
+    {
+        if ($request->expectsJson()) {
+            $response = new ApiErrorResponse();
+            $response->setTitle($exception->getMessage())
+                ->setStatus(401);
+
+            return $response->send();
+        }
+
+        return parent::unauthenticated($request, $exception);
     }
 }
