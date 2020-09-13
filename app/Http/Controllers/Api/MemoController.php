@@ -40,6 +40,8 @@ class MemoController extends Controller
     public function __construct(ApiSuccessResponse $successResponse)
     {
         $this->successResponse = $successResponse;
+
+        $this->middleware('auth:api');
     }
 
     /**

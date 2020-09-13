@@ -25,6 +25,19 @@ class MemoControllerTest extends TestCase
     const BODY_MAX_LENGTH = 5000;
 
     /***************************************************************
+     * 共通
+     ***************************************************************/
+    /**
+     * DBにテストユーザを作成する。
+     *
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|mixed
+     */
+    private function makeUser()
+    {
+        return factory(\App\User::class)->create();
+    }
+
+    /***************************************************************
      * store()
      ***************************************************************/
     /**
@@ -34,11 +47,13 @@ class MemoControllerTest extends TestCase
     {
         $title = 'タイトルテスト';
         $body = '本文テスト';
+        $user = $this->makeUser();
 
-        $response = $this->postJson(route('memos.store'), [
-            'title' => $title,
-            'body'  => $body,
-        ]);
+        $response = $this->actingAs($user)
+            ->postJson(route('memos.store'), [
+                'title' => $title,
+                'body'  => $body,
+            ]);
 
         $this->assertSuccessResponse($response);
 
@@ -69,11 +84,13 @@ class MemoControllerTest extends TestCase
 
         $title = 'タイトルテスト';
         $body = '本文テスト';
+        $user = $this->makeUser();
 
-        $response = $this->postJson(route('memos.store'), [
-            'title' => $title,
-            'body'  => $body,
-        ]);
+        $response = $this->actingAs($user)
+            ->postJson(route('memos.store'), [
+                'title' => $title,
+                'body'  => $body,
+            ]);
 
         $this->assertServerErrorResponse($response, 'メモの新規作成に失敗しました。');
 
@@ -92,10 +109,13 @@ class MemoControllerTest extends TestCase
      */
     public function 新規作成時にバリデーションエラーが発生すること(string $title, string $body, array $errors)
     {
-        $response = $this->postJson(route('memos.store'), [
-            'title' => $title,
-            'body'  => $body,
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->postJson(route('memos.store'), [
+                'title' => $title,
+                'body'  => $body,
+            ]);
 
         $this->assertValidationErrorResponse($response, $errors);
 
@@ -164,10 +184,13 @@ class MemoControllerTest extends TestCase
      */
     public function 新規作成時にバリデーションエラーが発生しないこと(string $title, string $body)
     {
-        $response = $this->postJson(route('memos.store'), [
-            'title' => $title,
-            'body'  => $body,
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->postJson(route('memos.store'), [
+                'title' => $title,
+                'body'  => $body,
+            ]);
 
         $this->assertSuccessResponse($response);
 
@@ -205,10 +228,12 @@ class MemoControllerTest extends TestCase
     public function メモを取得できること()
     {
         $id = 1;
-
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->getJson(route('memos.show', ['memo' => (string)$id]));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->getJson(route('memos.show', ['memo' => (string)$id]));
 
         $this->assertSuccessResponse($response);
 
@@ -228,7 +253,10 @@ class MemoControllerTest extends TestCase
         // 存在する場合に備えて削除しておく。
         \App\Memo::destroy($id);
 
-        $response = $this->getJson(route('memos.show', ['memo' => (string)$id]));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->getJson(route('memos.show', ['memo' => (string)$id]));
 
         $errorMsg = 'メモが存在しません。';
         $this->assertClientErrorResponse($response, Response::HTTP_NOT_FOUND, $errorMsg);
@@ -247,9 +275,12 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
-            'title' => $afterTitle,
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]), [
+                'title' => $afterTitle,
+            ]);
 
         $this->assertSuccessResponse($response);
 
@@ -273,9 +304,12 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
-            'body' => $afterBody,
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]), [
+                'body' => $afterBody,
+            ]);
 
         $this->assertSuccessResponse($response);
 
@@ -300,10 +334,13 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
-            'title' => $afterTitle,
-            'body'  => $afterBody,
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]), [
+                'title' => $afterTitle,
+                'body'  => $afterBody,
+            ]);
 
         $this->assertSuccessResponse($response);
 
@@ -334,7 +371,10 @@ class MemoControllerTest extends TestCase
         $createdAt = $model->created_at;
         $updatedAt = $model->updated_at;
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]));
 
         $errors = [
             [
@@ -369,7 +409,10 @@ class MemoControllerTest extends TestCase
         $id = 1;
         $beforeModel = factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]), $params);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]), $params);
 
         $this->assertValidationErrorResponse($response, $errors);
 
@@ -430,9 +473,12 @@ class MemoControllerTest extends TestCase
             ->andReturn(null);
         app()->instance(MemoUpdateService::class, $mockService);
 
-        $response = $this->putJson(route('memos.update', ['memo' => $id]), [
-            'title' => 'タイトル_更新後',
-        ]);
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->putJson(route('memos.update', ['memo' => $id]), [
+                'title' => 'タイトル_更新後',
+            ]);
 
         $this->assertServerErrorResponse($response, 'メモの更新に失敗しました。');
     }
@@ -449,7 +495,10 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class)->create(['id' => $id]);
 
-        $response = $this->deleteJson(route('memos.destroy', ['memo' => $id]));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->deleteJson(route('memos.destroy', ['memo' => $id]));
 
         $this->assertSuccessResponse($response);
         $response->assertExactJson(['result' => true]);
@@ -472,7 +521,10 @@ class MemoControllerTest extends TestCase
             ->andReturn(false);
         app()->instance(MemoDeleteService::class, $mockService);
 
-        $response = $this->deleteJson(route('memos.destroy', ['memo' => $id]));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)
+            ->deleteJson(route('memos.destroy', ['memo' => $id]));
 
         $this->assertServerErrorResponse($response, 'メモの削除に失敗しました。');
     }
@@ -489,7 +541,9 @@ class MemoControllerTest extends TestCase
 
         factory(\App\Memo::class, $recordAmount)->create();
 
-        $response = $this->getJson(route('memos.index'));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)->getJson(route('memos.index'));
 
         $this->assertSuccessResponse($response);
         $response->assertJsonCount($recordAmount);
@@ -500,7 +554,9 @@ class MemoControllerTest extends TestCase
      */
     public function メモが存在しない場合は空のJSONが返ること()
     {
-        $response = $this->getJson(route('memos.index'));
+        $user = $this->makeUser();
+
+        $response = $this->actingAs($user)->getJson(route('memos.index'));
 
         $this->assertSuccessResponse($response);
         $response->assertJsonCount(0);
