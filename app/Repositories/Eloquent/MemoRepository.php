@@ -4,6 +4,7 @@ namespace App\Repositories\Eloquent;
 
 use App\Repositories\MemoRepositoryInterface;
 use App\Memo;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class MemoRepository メモリポジトリ
@@ -102,5 +103,24 @@ class MemoRepository implements MemoRepositoryInterface
     public function fetchAll(): array
     {
         return Memo::all()->toArray();
+    }
+
+    /**
+     * ユーザIDを取得する。
+     *
+     * @param int $memoId メモID
+     * @return int|null 取得成功時はユーザID、失敗時はnull
+     */
+    public function fetchUserId(int $memoId): ?int
+    {
+        $result = DB::table('memos')->select('user_id')
+            ->where('id', '=', $memoId)
+            ->first();
+
+        if ($result === null) {
+            return null;
+        }
+
+        return $result->user_id;
     }
 }

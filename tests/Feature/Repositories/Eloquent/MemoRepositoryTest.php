@@ -234,9 +234,31 @@ class MemoRepositoryTest extends TestCase
      * fetchUserId()
      ***************************************************************/
     /**
-     *
+     * @test
      */
-    public function メモに紐づくユーザIDを返却すること()
+    public function ユーザID取得成功時にユーザIDを返却すること()
     {
+        $memoId = 100;
+
+        factory(\App\Memo::class)->create([
+            'id' => $memoId,
+            'user_id' => self::TEST_USER_ID,
+        ]);
+
+        $repository = new MemoRepository();
+        $result = $repository->fetchUserId($memoId);
+
+        $this->assertSame(self::TEST_USER_ID, $result);
+    }
+
+    /**
+     * @test
+     */
+    public function ユーザID取得失敗時にnullを返却すること()
+    {
+        $repository = new MemoRepository();
+        $result = $repository->fetchUserId(1);
+
+        $this->assertNull($result);
     }
 }

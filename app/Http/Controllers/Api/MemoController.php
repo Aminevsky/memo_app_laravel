@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\MemoDeleteFailException;
+use App\Exceptions\Api\MemoNotAuthorizedException;
 use App\Exceptions\Api\MemoNotFoundException;
 use App\Exceptions\Api\MemoStoreFailException;
 use App\Exceptions\Api\MemoUpdateFailException;
@@ -88,7 +89,7 @@ class MemoController extends Controller
      * @param  int  $id
      * @param \App\Services\MemoShowService $service
      * @return \Illuminate\Http\JsonResponse
-     * @throws \App\Exceptions\Api\MemoNotFoundException
+     * @throws \App\Exceptions\Api\MemoNotAuthorizedException
      */
     public function show(int $id, MemoShowService $service): JsonResponse
     {
@@ -96,6 +97,11 @@ class MemoController extends Controller
 
         if ($memo === null) {
             throw new MemoNotFoundException();
+        }
+
+        $userId = auth()->id();
+        if ($userId !== $memo['user_id']) {
+            throw new MemoNotAuthorizedException();
         }
 
         return $this->successResponse->setContent($memo)->send();

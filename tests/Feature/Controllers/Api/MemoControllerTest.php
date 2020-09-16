@@ -24,17 +24,23 @@ class MemoControllerTest extends TestCase
     /** @var int 本文最大文字数 */
     const BODY_MAX_LENGTH = 5000;
 
+    /** @var int テスト用ユーザID */
+    const TEST_USER_ID = 1;
+
     /***************************************************************
      * 共通
      ***************************************************************/
     /**
      * DBにテストユーザを作成する。
      *
+     * @param int $userId ユーザID
      * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Eloquent\Model|mixed
      */
-    private function makeUser()
+    private function makeUser(int $userId = self::TEST_USER_ID)
     {
-        return factory(\App\User::class)->create();
+        return factory(\App\User::class)->create([
+            'id' => $userId,
+        ]);
     }
 
     /***************************************************************
@@ -228,9 +234,12 @@ class MemoControllerTest extends TestCase
     public function メモを取得できること()
     {
         $id = 1;
-        factory(\App\Memo::class)->create(['id' => $id]);
-
         $user = $this->makeUser();
+
+        factory(\App\Memo::class)->create([
+            'id' => $id,
+            'user_id' => $user->id,
+        ]);
 
         $response = $this->actingAs($user)
             ->getJson(route('memos.show', ['memo' => (string)$id]));
@@ -260,6 +269,33 @@ class MemoControllerTest extends TestCase
 
         $errorMsg = 'メモが存在しません。';
         $this->assertClientErrorResponse($response, Response::HTTP_NOT_FOUND, $errorMsg);
+    }
+
+    /**
+     * @test
+     */
+    public function メモ取得時にユーザIDが異なる場合はエラーが発生すること()
+    {
+        $memoId = 1;
+        $userIds = [10, 11];
+
+        // メモを持たないユーザを作る。
+        $loginUser = $this->makeUser($userIds[0]);
+
+        // メモを持つユーザを作る。
+        $this->makeUser($userIds[1]);
+
+        factory(\App\Memo::class)->create([
+            'id' => $memoId,
+            'user_id' => $userIds[1],
+        ]);
+
+        // メモを持たないユーザがメモを取得しようとする。
+        $response = $this->actingAs($loginUser)
+            ->getJson(route('memos.show', ['memo' => (string)$memoId]));
+
+        $errorMsg = 'メモへのアクセスが許可されていません。';
+        $this->assertClientErrorResponse($response, Response::HTTP_FORBIDDEN, $errorMsg);
     }
 
     /***************************************************************

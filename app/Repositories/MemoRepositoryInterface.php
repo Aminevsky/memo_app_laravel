@@ -49,4 +49,12 @@ interface MemoRepositoryInterface
      * @return array 0件の場合は空配列
      */
     function fetchAll(): array;
+
+    /**
+     * ユーザIDを取得する。
+     *
+     * @param int $memoId メモID
+     * @return int|null 取得成功時はユーザID、失敗時はnull
+     */
+    function fetchUserId(int $memoId): ?int;
 }

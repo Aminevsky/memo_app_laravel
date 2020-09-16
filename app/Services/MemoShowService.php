@@ -6,6 +6,8 @@ use App\Repositories\MemoRepositoryInterface;
 
 class MemoShowService
 {
+    use MemoHelperTrait;
+
     /** @var MemoRepositoryInterface  */
     private MemoRepositoryInterface $memoRepository;
 
