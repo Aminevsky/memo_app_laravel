@@ -49,7 +49,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモを新規作成すること()
+    public function 新規作成に成功した場合は正常レスポンスを返却すること()
     {
         $title = 'タイトルテスト';
         $body = '本文テスト';
@@ -80,7 +80,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function DB追加に失敗した場合にエラーメッセージが返却されること()
+    public function 新規作成時にDBエラーが発生した場合はエラーレスポンスを返却すること()
     {
         // サービスクラスをモック化してエラー状態を発生させる。
         $mockService = Mockery::mock(MemoCreateService::class);
@@ -113,7 +113,11 @@ class MemoControllerTest extends TestCase
      * @param string $body
      * @param array $errors
      */
-    public function 新規作成時にバリデーションエラーが発生すること(string $title, string $body, array $errors)
+    public function 新規作成時にバリデーションエラーが発生した場合はエラーレスポンスを返却すること(
+        string $title,
+        string $body,
+        array $errors
+    )
     {
         $user = $this->makeUser();
 
@@ -188,7 +192,10 @@ class MemoControllerTest extends TestCase
      * @param string $title
      * @param string $body
      */
-    public function 新規作成時にバリデーションエラーが発生しないこと(string $title, string $body)
+    public function 新規作成時にバリデーションエラーが発生しない場合は正常レスポンスを返却すること(
+        string $title,
+        string $body
+    )
     {
         $user = $this->makeUser();
 
@@ -231,7 +238,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモを取得できること()
+    public function 取得に成功した場合は正常レスポンスを返却すること()
     {
         $id = 1;
         $user = $this->makeUser();
@@ -255,7 +262,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモが存在しない場合にエラーが発生すること()
+    public function 取得に失敗した場合はエラーレスポンスを返却すること()
     {
         $id = 1;
 
@@ -274,7 +281,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモ取得時にユーザIDが異なる場合はエラーが発生すること()
+    public function 取得時にユーザIDが異なる場合はエラーレスポンスを返却すること()
     {
         $memoId = 1;
         $userIds = [10, 11];
@@ -304,14 +311,13 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモのタイトルを更新できること()
+    public function タイトル更新時に正常レスポンスを返却すること()
     {
         $id = 1;
         $afterTitle = str_repeat('a', self::TITLE_MAX_LENGTH);
 
-        factory(\App\Memo::class)->create(['id' => $id]);
-
         $user = $this->makeUser();
+        factory(\App\Memo::class)->create(['id' => $id]);
 
         $response = $this->actingAs($user)
             ->putJson(route('memos.update', ['memo' => $id]), [
@@ -333,14 +339,13 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモの本文を更新できること()
+    public function 本文更新時に正常レスポンスを返却すること()
     {
         $id = 1;
         $afterBody = str_repeat('a', self::BODY_MAX_LENGTH);
 
-        factory(\App\Memo::class)->create(['id' => $id]);
-
         $user = $this->makeUser();
+        factory(\App\Memo::class)->create(['id' => $id]);
 
         $response = $this->actingAs($user)
             ->putJson(route('memos.update', ['memo' => $id]), [
@@ -362,15 +367,14 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function 複数項目を同時に更新できること()
+    public function 複数項目を同時に更新した場合に正常レスポンスを返却すること()
     {
         $id = 1;
         $afterTitle = 'タイトル_更新後';
         $afterBody = '本文_更新後';
 
-        factory(\App\Memo::class)->create(['id' => $id]);
-
         $user = $this->makeUser();
+        factory(\App\Memo::class)->create(['id' => $id]);
 
         $response = $this->actingAs($user)
             ->putJson(route('memos.update', ['memo' => $id]), [
@@ -394,10 +398,11 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function 更新項目が1つも指定されていない場合にエラーとなること()
+    public function 更新時に更新項目が未指定の場合はエラーレスポンスを返却すること()
     {
         $id = 1;
 
+        $user = $this->makeUser();
         $model = factory(\App\Memo::class)->make([
             'id'    => $id,
         ]);
@@ -406,8 +411,6 @@ class MemoControllerTest extends TestCase
         $model->save();
         $createdAt = $model->created_at;
         $updatedAt = $model->updated_at;
-
-        $user = $this->makeUser();
 
         $response = $this->actingAs($user)
             ->putJson(route('memos.update', ['memo' => $id]));
@@ -440,12 +443,15 @@ class MemoControllerTest extends TestCase
      * @param array $params
      * @param array $errors
      */
-    public function 更新時にバリデーションエラーが発生すること(array $params, array $errors)
+    public function 更新時にバリデーションエラーが発生した場合はエラーレスポンスを返却すること(
+        array $params,
+        array $errors
+    )
     {
         $id = 1;
-        $beforeModel = factory(\App\Memo::class)->create(['id' => $id]);
 
         $user = $this->makeUser();
+        $beforeModel = factory(\App\Memo::class)->create(['id' => $id]);
 
         $response = $this->actingAs($user)
             ->putJson(route('memos.update', ['memo' => $id]), $params);
@@ -498,7 +504,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function DB更新に失敗した場合にエラーが発生すること()
+    public function 更新時にDBエラーが発生した場合はエラーレスポンスを返却すること()
     {
         $id = 1;
 
@@ -525,13 +531,12 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモを削除できること()
+    public function 削除に成功した場合は正常レスポンスを返却すること()
     {
         $id = 1;
 
-        factory(\App\Memo::class)->create(['id' => $id]);
-
         $user = $this->makeUser();
+        factory(\App\Memo::class)->create(['id' => $id]);
 
         $response = $this->actingAs($user)
             ->deleteJson(route('memos.destroy', ['memo' => $id]));
@@ -547,7 +552,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function DB削除に失敗した場合にエラーが発生すること()
+    public function 削除に失敗した場合はエラーレスポンスを返却すること()
     {
         $id = 1;
 
@@ -571,13 +576,12 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモを全件取得できること()
+    public function 全件取得時に正常レスポンスを返却すること()
     {
         $recordAmount = 2;
 
-        factory(\App\Memo::class, $recordAmount)->create();
-
         $user = $this->makeUser();
+        factory(\App\Memo::class, $recordAmount)->create();
 
         $response = $this->actingAs($user)->getJson(route('memos.index'));
 
@@ -588,7 +592,7 @@ class MemoControllerTest extends TestCase
     /**
      * @test
      */
-    public function メモが存在しない場合は空のJSONが返ること()
+    public function 全件取得時にメモが存在しない場合は空のJSONを返却すること()
     {
         $user = $this->makeUser();
 
