@@ -17,6 +17,7 @@ class MemoCreateServiceTest extends TestCase
     {
         $title = 'タイトルテスト';
         $body = '本文テスト';
+        $userId = 1;
 
         $expected = [
             'id'    => 1,
@@ -24,6 +25,7 @@ class MemoCreateServiceTest extends TestCase
             'body'  => $body,
             'created_at' => Carbon::now()->toJSON(),
             'updated_at' => Carbon::now()->toJSON(),
+            'user_id' => $userId,
         ];
 
         $mockRepo = Mockery::mock(MemoRepositoryInterface::class);
@@ -32,7 +34,7 @@ class MemoCreateServiceTest extends TestCase
             ->andReturn($expected);
 
         $service = new MemoCreateService($mockRepo);
-        $result = $service->create($title, $body);
+        $result = $service->create($title, $body, $userId);
 
         $this->assertIsArray($result);
         $this->assertSame($expected, $result);

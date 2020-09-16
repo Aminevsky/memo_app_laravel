@@ -72,7 +72,8 @@ class MemoController extends Controller
             'body'  => ['required', $this->getRuleBodyMax()],
         ])->validate();
 
-        $result = $service->create($request->title, $request->body);
+        $userId = auth()->id();
+        $result = $service->create($request->title, $request->body, $userId);
 
         if (!$result) {
             throw new MemoStoreFailException();

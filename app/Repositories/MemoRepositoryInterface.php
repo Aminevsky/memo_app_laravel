@@ -13,9 +13,10 @@ interface MemoRepositoryInterface
      *
      * @param string $title タイトル
      * @param string $body 本文
+     * @param int $userId ユーザID
      * @return array|false 作成成功時は配列、失敗時はfalse
      */
-    function create(string $title, string $body);
+    function create(string $title, string $body, int $userId);
 
     /**
      * メモを取得する。

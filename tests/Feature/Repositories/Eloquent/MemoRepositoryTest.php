@@ -14,6 +14,22 @@ class MemoRepositoryTest extends TestCase
     /** @var string テーブル名（メモ情報） */
     const TABLE_NAME_MEMO = 'memos';
 
+    /** @var int ユーザID */
+    const TEST_USER_ID = 1;
+
+    /**
+     * @inheritDoc
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // テスト用ユーザを作成する。
+        factory(\App\User::class)->create([
+            'id' => self::TEST_USER_ID,
+        ]);
+    }
+
     /***************************************************************
      * create()
      ***************************************************************/
@@ -24,13 +40,15 @@ class MemoRepositoryTest extends TestCase
     {
         $title = $this->faker->text(255);
         $body = $this->faker->text(1000);
+        $userId = 1;
 
         $repository = new MemoRepository();
-        $result = $repository->create($title, $body);
+        $result = $repository->create($title, $body, $userId);
 
         $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
             'title' => $title,
             'body' => $body,
+            'user_id' => $userId,
         ]);
 
         $this->assertNotFalse($result);
@@ -210,5 +228,15 @@ class MemoRepositoryTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertSame(0, count($result));
+    }
+
+    /***************************************************************
+     * fetchUserId()
+     ***************************************************************/
+    /**
+     *
+     */
+    public function メモに紐づくユーザIDを返却すること()
+    {
     }
 }

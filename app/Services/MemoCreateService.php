@@ -28,10 +28,11 @@ class MemoCreateService
      *
      * @param string $title タイトル
      * @param string $body 本文
+     * @param int $userId ユーザID
      * @return array|false 作成成功時は配列、失敗時はfalse
      */
-    public function create(string $title, string $body)
+    public function create(string $title, string $body, int $userId)
     {
-        return $this->memoRepository->create($title, $body);
+        return $this->memoRepository->create($title, $body, $userId);
     }
 }

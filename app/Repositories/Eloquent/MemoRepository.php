@@ -16,13 +16,15 @@ class MemoRepository implements MemoRepositoryInterface
      *
      * @param string $title タイトル
      * @param string $body 本文
+     * @param int $userId ユーザID
      * @return array|false 作成成功時は配列、失敗時はfalse
      */
-    public function create(string $title, string $body)
+    public function create(string $title, string $body, int $userId)
     {
         $model = new Memo();
         $model->title = $title;
         $model->body = $body;
+        $model->user_id = $userId;
 
         if (!$model->save()) {
             return false;
