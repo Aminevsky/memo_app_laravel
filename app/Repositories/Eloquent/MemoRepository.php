@@ -57,13 +57,16 @@ class MemoRepository implements MemoRepositoryInterface
      * @param int $id メモID
      * @param array $contents 更新後の内容
      * @return array|null 更新成功時は配列、失敗時はnull
+     * @throws \RuntimeException
      */
     public function update(int $id, array $contents): ?array
     {
         $model = Memo::find($id);
 
-        // TODO $contents が空（count == 0）の場合の例外処理
-        // TODO モデルが存在しない場合にどうするか？
+        if (count($contents) === 0) {
+            throw new \RuntimeException('更新項目を指定してください。');
+        }
+
         if ($model === null) {
             return null;
         }
@@ -76,7 +79,6 @@ class MemoRepository implements MemoRepositoryInterface
             $model->body = $contents['body'];
         }
 
-        // TODO モデルの更新に失敗した場合にどうするか？
         if (!$model->save()) {
             return null;
         }

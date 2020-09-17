@@ -169,6 +169,17 @@ class MemoRepositoryTest extends TestCase
         $this->assertArrayHasKey('updated_at', $result);
     }
 
+    /**
+     * @test
+     */
+    public function 更新項目が空の場合は例外が発生すること()
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('更新項目を指定してください。');
+
+        $repository = new MemoRepository();
+        $repository->update(1, []);
+    }
 
     /***************************************************************
      * destroy()
