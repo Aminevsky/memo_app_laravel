@@ -6,6 +6,8 @@ use App\Repositories\MemoRepositoryInterface;
 
 class MemoDeleteService
 {
+    use MemoHelperTrait;
+
     /** @var MemoRepositoryInterface  */
     private MemoRepositoryInterface $memoRepository;
 

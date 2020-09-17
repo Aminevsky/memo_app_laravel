@@ -600,6 +600,9 @@ class MemoControllerTest extends TestCase
         $id = 1;
 
         $mockService = Mockery::mock(MemoDeleteService::class);
+        $mockService->shouldReceive('isAuthorized')
+            ->withAnyArgs()
+            ->andReturn(true);
         $mockService->shouldReceive('delete')
             ->with($id)
             ->andReturn(false);
@@ -611,6 +614,28 @@ class MemoControllerTest extends TestCase
             ->deleteJson(route('memos.destroy', ['memo' => $id]));
 
         $this->assertServerErrorResponse($response, 'メモの削除に失敗しました。');
+    }
+
+    /**
+     * @test
+     */
+    public function 削除時にユーザIDが異なる場合はエラーレスポンスを返却すること()
+    {
+        $memoId = 1;
+        $userIds = [10, 11];
+
+        $loginUser = $this->makeUser($userIds[0]);
+        $this->makeUser($userIds[1]);
+
+        factory(\App\Memo::class)->create([
+            'id' => $memoId,
+            'user_id' => $userIds[1],
+        ]);
+
+        $response = $this->actingAs($loginUser)
+            ->deleteJson(route('memos.destroy', ['memo' => $memoId]));
+
+        $this->assertClientErrorResponse($response, Response::HTTP_FORBIDDEN, self::ERROR_MSG_FORBIDDEN);
     }
 
     /***************************************************************

@@ -64,6 +64,7 @@ class MemoController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Services\MemoCreateService $service
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
      * @throws \App\Exceptions\Api\MemoStoreFailException
      */
     public function store(Request $request, MemoCreateService $service): JsonResponse
@@ -89,6 +90,7 @@ class MemoController extends Controller
      * @param  int  $id
      * @param \App\Services\MemoShowService $service
      * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\Api\MemoNotFoundException
      * @throws \App\Exceptions\Api\MemoNotAuthorizedException
      */
     public function show(int $id, MemoShowService $service): JsonResponse
@@ -114,6 +116,8 @@ class MemoController extends Controller
      * @param  int  $id
      * @param \App\Services\MemoUpdateService $service
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Validation\ValidationException
+     * @throws \App\Exceptions\Api\MemoNotAuthorizedException
      * @throws \App\Exceptions\Api\MemoUpdateFailException
      */
     public function update(Request $request, int $id, MemoUpdateService $service): JsonResponse
@@ -156,10 +160,16 @@ class MemoController extends Controller
      * @param  int  $id
      * @param \App\Services\MemoDeleteService $service
      * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\Api\MemoNotAuthorizedException
      * @throws \App\Exceptions\Api\MemoDeleteFailException
      */
     public function destroy(int $id, MemoDeleteService $service): JsonResponse
     {
+        $userId = auth()->id();
+        if (!$service->isAuthorized($id, $userId)) {
+            throw new MemoNotAuthorizedException();
+        }
+
         $result = $service->delete($id);
 
         if (!$result) {

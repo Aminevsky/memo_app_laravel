@@ -27,4 +27,23 @@ class MemoDeleteServiceTest extends TestCase
 
         $this->assertTrue($result);
     }
+
+    /**
+     * @test
+     */
+    public function トレイトの認可判定メソッドを呼び出せること()
+    {
+        $memoId = 1;
+        $userId = 10;
+
+        $mockRepo = Mockery::mock(MemoRepositoryInterface::class);
+        $mockRepo->shouldReceive('fetchUserId')
+            ->withAnyArgs()
+            ->andReturn($userId);
+
+        $service = new MemoDeleteService($mockRepo);
+        $result = $service->isAuthorized($memoId, $userId);
+
+        $this->assertIsBool($result);
+    }
 }
