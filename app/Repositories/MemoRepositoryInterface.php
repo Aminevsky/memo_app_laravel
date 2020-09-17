@@ -44,11 +44,12 @@ interface MemoRepositoryInterface
     function delete(int $id): bool;
 
     /**
-     * メモを全件取得する。
+     * メモを全件取得する（キー:ユーザID）。
      *
+     * @param int $userId ユーザID
      * @return array 0件の場合は空配列
      */
-    function fetchAll(): array;
+    function fetchAllByUserId(int $userId): array;
 
     /**
      * ユーザIDを取得する。

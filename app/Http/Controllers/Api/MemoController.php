@@ -53,7 +53,8 @@ class MemoController extends Controller
      */
     public function index(MemoListService $service): JsonResponse
     {
-        $result = $service->fetchAll();
+        $userId = auth()->id();
+        $result = $service->fetchAllByUserId($userId);
 
         return $this->successResponse->setContent($result)->send();
     }

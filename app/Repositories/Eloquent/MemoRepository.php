@@ -96,13 +96,14 @@ class MemoRepository implements MemoRepositoryInterface
     }
 
     /**
-     * メモを全件取得する。
+     * メモを全件取得する（キー:ユーザID）。
      *
+     * @param int $userId ユーザID
      * @return array 0件の場合は空配列
      */
-    public function fetchAll(): array
+    public function fetchAllByUserId(int $userId): array
     {
-        return Memo::all()->toArray();
+        return Memo::where('user_id', $userId)->get()->toArray();
     }
 
     /**

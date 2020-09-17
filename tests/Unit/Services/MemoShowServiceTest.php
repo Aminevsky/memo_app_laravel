@@ -23,6 +23,7 @@ class MemoShowServiceTest extends TestCase
             'body'  => '本文テスト',
             'created_at' => Carbon::now()->toJSON(),
             'updated_at' => Carbon::now()->toJSON(),
+            'user_id' => 1,
         ];
 
         $mockRepo = Mockery::mock(MemoRepositoryInterface::class);

@@ -192,29 +192,40 @@ class MemoRepositoryTest extends TestCase
     }
 
     /***************************************************************
-     * fetchAll()
+     * fetchAllByUserId()
      ***************************************************************/
     /**
      * @test
      */
-    public function メモを全件取得して配列で返却すること()
+    public function ユーザIDをキーにメモを全件取得して配列で返却すること()
     {
-        $recordAmount = 2;
+        $validUserId = self::TEST_USER_ID;
+        $invalidUserId = $validUserId + 1;
 
-        factory(\App\Memo::class, $recordAmount)->create();
+        // 取得されないデータのユーザを作成する。
+        factory(\App\User::class)->create([
+            'id' => $invalidUserId,
+        ]);
+
+        factory(\App\Memo::class)->createMany([
+            ['user_id' => $validUserId],
+            ['user_id' => $invalidUserId], // 取得されるべきでないデータ
+            ['user_id' => $validUserId],
+        ]);
 
         $repository = new MemoRepository();
-        $result = $repository->fetchAll();
+        $resultItems = $repository->fetchAllByUserId(self::TEST_USER_ID);
 
-        $this->assertIsArray($result);
-        $this->assertSame($recordAmount, count($result));
+        $this->assertIsArray($resultItems);
+        $this->assertCount(2, $resultItems);
 
-        for ($i = 0; $i < $recordAmount; $i++) {
-            $this->assertArrayHasKey('id', $result[$i]);
-            $this->assertArrayHasKey('title', $result[$i]);
-            $this->assertArrayHasKey('body', $result[$i]);
-            $this->assertArrayHasKey('created_at', $result[$i]);
-            $this->assertArrayHasKey('updated_at', $result[$i]);
+        foreach ($resultItems as $item) {
+            $this->assertArrayHasKey('id', $item);
+            $this->assertArrayHasKey('title', $item);
+            $this->assertArrayHasKey('body', $item);
+            $this->assertArrayHasKey('created_at', $item);
+            $this->assertArrayHasKey('updated_at', $item);
+            $this->assertNotSame($invalidUserId, $item['user_id']);
         }
     }
 
@@ -224,7 +235,7 @@ class MemoRepositoryTest extends TestCase
     public function メモが存在しない場合に空配列を返却すること()
     {
         $repository = new MemoRepository();
-        $result = $repository->fetchAll();
+        $result = $repository->fetchAllByUserId(self::TEST_USER_ID);
 
         $this->assertIsArray($result);
         $this->assertSame(0, count($result));

@@ -24,12 +24,13 @@ class MemoListService
     }
 
     /**
-     * メモを全件取得する。
+     * メモを全件取得する（キー:ユーザID）。
      *
+     * @param int $userId ユーザID
      * @return array 0件の場合は空配列
      */
-    public function fetchAll(): array
+    public function fetchAllByUserId(int $userId): array
     {
-        return $this->memoRepository->fetchAll();
+        return $this->memoRepository->fetchAllByUserId($userId);
     }
 }
