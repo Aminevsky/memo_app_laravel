@@ -44,4 +44,23 @@ class MemoUpdateServiceTest extends TestCase
         $this->assertIsArray($result);
         $this->assertSame($expected, $result);
     }
+
+    /**
+     * @test
+     */
+    public function トレイトの認可判定メソッドを呼び出せること()
+    {
+        $memoId = 1;
+        $userId = 10;
+
+        $mockRepo = Mockery::mock(MemoRepositoryInterface::class);
+        $mockRepo->shouldReceive('fetchUserId')
+            ->withAnyArgs()
+            ->andReturn($userId);
+
+        $service = new MemoUpdateService($mockRepo);
+        $result = $service->isAuthorized($memoId, $userId);
+
+        $this->assertIsBool($result);
+    }
 }

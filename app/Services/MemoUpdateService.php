@@ -10,6 +10,8 @@ use App\Repositories\MemoRepositoryInterface;
  */
 class MemoUpdateService
 {
+    use MemoHelperTrait;
+
     /** @var MemoRepositoryInterface */
     private MemoRepositoryInterface $memoRepository;
 

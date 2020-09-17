@@ -136,6 +136,11 @@ class MemoController extends Controller
             $contents['body'] = $request->body;
         }
 
+        $userId = auth()->id();
+        if (!$service->isAuthorized($id, $userId)) {
+            throw new MemoNotAuthorizedException();
+        }
+
         $memo = $service->update($id, $contents);
 
         if ($memo === null) {

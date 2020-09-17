@@ -27,6 +27,9 @@ class MemoControllerTest extends TestCase
     /** @var int テスト用ユーザID */
     const TEST_USER_ID = 1;
 
+    /** @var string エラーメッセージ（アクセス不許可） */
+    const ERROR_MSG_FORBIDDEN = 'メモへのアクセスが許可されていません。';
+
     /***************************************************************
      * 共通
      ***************************************************************/
@@ -301,8 +304,7 @@ class MemoControllerTest extends TestCase
         $response = $this->actingAs($loginUser)
             ->getJson(route('memos.show', ['memo' => (string)$memoId]));
 
-        $errorMsg = 'メモへのアクセスが許可されていません。';
-        $this->assertClientErrorResponse($response, Response::HTTP_FORBIDDEN, $errorMsg);
+        $this->assertClientErrorResponse($response, Response::HTTP_FORBIDDEN, self::ERROR_MSG_FORBIDDEN);
     }
 
     /***************************************************************
@@ -510,6 +512,9 @@ class MemoControllerTest extends TestCase
 
         // サービスクラスをモック化してエラー状態を発生させる。
         $mockService = Mockery::mock(MemoUpdateService::class);
+        $mockService->shouldReceive('isAuthorized')
+            ->withAnyArgs()
+            ->andReturn(true);
         $mockService->shouldReceive('update')
             ->withAnyArgs()
             ->andReturn(null);
@@ -523,6 +528,44 @@ class MemoControllerTest extends TestCase
             ]);
 
         $this->assertServerErrorResponse($response, 'メモの更新に失敗しました。');
+    }
+
+    /**
+     * @test
+     */
+    public function 更新時にユーザIDが異なる場合はエラーレスポンスを返却すること()
+    {
+        $memoId = 1;
+        $userIds = [10, 11];
+        $beforeTitle = 'タイトル_更新前';
+        $afterTitle = 'タイトル_更新後';
+
+        $loginUser = $this->makeUser($userIds[0]);
+        $this->makeUser($userIds[1]);
+
+        factory(\App\Memo::class)->create([
+            'id' => $memoId,
+            'title' => $beforeTitle,
+            'user_id' => $userIds[1],
+        ]);
+
+        $response = $this->actingAs($loginUser)
+            ->putJson(route('memos.update', ['memo' => $memoId]), [
+                'title' => $afterTitle,
+            ]);
+
+        $this->assertClientErrorResponse($response, Response::HTTP_FORBIDDEN, self::ERROR_MSG_FORBIDDEN);
+
+        $this->assertDatabaseHas(self::TABLE_NAME_MEMO, [
+            'id' => $memoId,
+            'title' => $beforeTitle,
+            'user_id' => $userIds[1],
+        ]);
+        $this->assertDatabaseMissing(self::TABLE_NAME_MEMO,[
+            'id' => $memoId,
+            'title' => $afterTitle,
+            'user_id' => $userIds[1],
+        ]);
     }
 
     /***************************************************************
