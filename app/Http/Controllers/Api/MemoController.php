@@ -53,7 +53,7 @@ class MemoController extends Controller
      */
     public function index(MemoListService $service): JsonResponse
     {
-        $userId = auth()->id();
+        $userId = $this->getLoginUserId();
         $result = $service->fetchAllByUserId($userId);
 
         return $this->successResponse->setContent($result)->send();
@@ -75,7 +75,7 @@ class MemoController extends Controller
             'body'  => ['required', $this->getRuleBodyMax()],
         ])->validate();
 
-        $userId = auth()->id();
+        $userId = $this->getLoginUserId();
         $result = $service->create($request->title, $request->body, $userId);
 
         if (!$result) {
@@ -102,7 +102,7 @@ class MemoController extends Controller
             throw new MemoNotFoundException();
         }
 
-        $userId = auth()->id();
+        $userId = $this->getLoginUserId();
         if ($userId !== $memo['user_id']) {
             throw new MemoNotAuthorizedException();
         }
@@ -141,7 +141,7 @@ class MemoController extends Controller
             $contents['body'] = $request->body;
         }
 
-        $userId = auth()->id();
+        $userId = $this->getLoginUserId();
         if (!$service->isAuthorized($id, $userId)) {
             throw new MemoNotAuthorizedException();
         }
@@ -166,7 +166,7 @@ class MemoController extends Controller
      */
     public function destroy(int $id, MemoDeleteService $service): JsonResponse
     {
-        $userId = auth()->id();
+        $userId = $this->getLoginUserId();
         if (!$service->isAuthorized($id, $userId)) {
             throw new MemoNotAuthorizedException();
         }
@@ -198,5 +198,15 @@ class MemoController extends Controller
     private function getRuleBodyMax(): string
     {
         return 'max:' . constant('self::BODY_MAX_LEN');
+    }
+
+    /**
+     * ログイン中のユーザIDを取得する。
+     *
+     * @return int
+     */
+    private function getLoginUserId(): int
+    {
+        return auth()->id();
     }
 }
